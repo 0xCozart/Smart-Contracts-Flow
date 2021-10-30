@@ -1,0 +1,14 @@
+{
+  "name": "solidity-expansion",
+  "version": "0.0.1",
+  "description": "Showcasing Solidity contracts using Hardhat development environment",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alan Vega",
+  "license": "MIT",
+  "devDependencies": {
+    "hardhat": "^2.6.7"
+  }
+}
