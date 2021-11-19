@@ -1,4 +1,4 @@
-# Solidity 
+# Solidity
 
 ```shell
 npx hardhat accounts
