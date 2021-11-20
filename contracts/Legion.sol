@@ -7,24 +7,23 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-
-contract MyCollectible is ERC721, Ownable {
-/* ---------------------------- contract getters ---------------------------- */
+contract Legion is ERC721, Ownable {
+    /* ---------------------------- contract getters ---------------------------- */
     using Counters for Counters.Counter;
     mapping(address => uint) public ownerToTokenAmount;
     mapping(uint => address) public tokenOwner;
     Counters.Counter private _tokenIdCounter;
 
-  constructor() ERC721("Legion", "LGN") {}
+    constructor() ERC721("Legion", "LGN") {}
 
-/* ---------------------------------- utils --------------------------------- */
+    /* ---------------------------------- utils --------------------------------- */
     uint randNonce = 0;
 
-/* -------------------------------------------------------------------------- */
-/*                         Legion/Legionare properties                        */
-/* -------------------------------------------------------------------------- */
-    
-    struct LeggionaireBaseStats {
+    /* -------------------------------------------------------------------------- */
+    /*                         Legion/Legionare properties                        */
+    /* -------------------------------------------------------------------------- */
+
+    struct LegionnaireBaseStats {
         string species;
         uint8 level;
         uint8 experience;
@@ -35,9 +34,9 @@ contract MyCollectible is ERC721, Ownable {
         uint8 luck;
     }
 
-    struct Leggionnaire {
+    struct Legionnaire {
         string name;
-        uint8 level; 
+        uint8 level;
         string species;
         uint8 age;
         uint8 powerLevel;
@@ -49,101 +48,99 @@ contract MyCollectible is ERC721, Ownable {
         uint8 experience;
     }
 
-    struct Legion {
-        Legionnaire[] members;
-    }
+    mapping(uint => Legionnaire) public legionnaires;
 
-    mapping (address => uint) public legions;
-    mapping (uint => Legionnaire) public legionaires;
+    string[10] public species = ["Orc", "Goblin", "Human", "Troll", "Dwarf", "Elf", "Ogre", "Lizard", "Gnome", "Dragon"];
 
-    string[10] public species = [
-        "Orc",
-        "Goblin",
-        "Human",
-        "Troll",
-        "Dwarf",
-        "Elf",
-        "Ogre",
-        "Lizard",
-        "Gnome",
-        "Dragon"];
-
-    /** 
-      * @dev randomized species selection with a lower chance of generating a "Dragon" species
-      * @param {address} _owner 
-      * @return string species
-      */
-    function _weightedSpeciesGenerator(address _address) private view returns (string memory) {
+    /**
+     * @dev randomized species selection with a lower chance of generating a "Dragon" species
+     * @param {address} _owner
+     * @return string species
+     */
+    function _weightedSpeciesGenerator(address _address) private returns (string memory) {
         randNonce++;
-        uint8 speciesIndex = uint(keccak256(abi.encodePacked(now, _address, randNonce))) % 10;
+        uint8 speciesIndex = uint8(uint(keccak256(abi.encodePacked(block.timestamp, _address, randNonce))) % 10);
         if (speciesIndex == 9) {
             if (randNonce % 2 == 0) {
-                speciesIndex = uint(keccak256(abi.encodePacked(now, _address, randNonce))) % 10;
+                speciesIndex = uint8(uint(keccak256(abi.encodePacked(block.timestamp, _address, randNonce))) % 10);
             }
         }
         return species[speciesIndex];
     }
 
-
-    /** 
-      * @dev generates base stats for a new Legionnaire
-      * @param {address} "msg.sender" 
-      * @return object of type LegionareBaseStats
-      */
-    function _generateBaseStats(address _address) private view returns (LegionareBaseStats) {
-        LegionareBaseStats stats;
+    /**
+     * @dev generates base stats for a new Legionnaire
+     * @param {address} "msg.sender"
+     * @return object of type LegionareBaseStats
+     */
+    function _generateBaseStats(address _address) private returns (LegionnaireBaseStats memory) {
+        LegionnaireBaseStats memory stats;
         randNonce++;
         stats.level = 1;
         stats.experience = 0;
         stats.species = _weightedSpeciesGenerator(_address);
-        stats.attack = uint(keccak256(abi.encodePacked(now, _address, randNonce))) % 10;
-        stats.defense = uint(keccak256(abi.encodePacked(now, _address, randNonce))) % 10; 
-        stats.speed = uint(keccak256(abi.encodePacked(now, _address, randNonce))) % 10;
-        stats.level = uint(keccak256(abi.encodePacked(now, _address, randNonce))) % 10;
+        stats.attack = uint8(uint(keccak256(abi.encodePacked(block.timestamp, _address, randNonce))) % 10);
+        stats.defense = uint8(uint(keccak256(abi.encodePacked(block.timestamp, _address, randNonce))) % 10);
+        stats.speed = uint8(uint(keccak256(abi.encodePacked(block.timestamp, _address, randNonce))) % 10);
+        stats.level = uint8(uint(keccak256(abi.encodePacked(block.timestamp, _address, randNonce))) % 10);
         stats.health = 25;
         return stats;
     }
 
     function _mintLegionare(address _address) private {
-      Legionnaire legionnaire;
-      LegionBaseStats stats = _generateBaseStats(_address);
-      legionnaire.name = "testLegionare";
-      legionnaire.level = stats.level;
-      legionnaire.species = stats.species;
-      legionnaire.age = 1;
-      legionnaire.powerLevel = 1;
-      legionnaire.health = stats.health;
-      legionnaire.attack = stats.attack;
-      legionnaire.defense = stats.defense;
-      legionnaire.speed = stats.speed;
-      legionnaire.luck = stats.luck;
-      legionnaire.experience = stats.experience;
+        Legionnaire memory legionnaire;
+        LegionnaireBaseStats memory stats = _generateBaseStats(_address);
+        legionnaire.name = "testLegionare";
+        legionnaire.level = stats.level;
+        legionnaire.species = stats.species;
+        legionnaire.age = 1;
+        legionnaire.powerLevel = 1;
+        legionnaire.health = stats.health;
+        legionnaire.attack = stats.attack;
+        legionnaire.defense = stats.defense;
+        legionnaire.speed = stats.speed;
+        legionnaire.luck = stats.luck;
+        legionnaire.experience = stats.experience;
 
-      uint8 id = _tokenIdCounter.current();
-      legionaires[id] = legionnaire;
-      legions[_address].members.push(id);
-      tokenOwner[id] = _address;
-      ownerToTokenAmount[_address]++;
-      
-      emit Transfer(address(this), _address, id);
+        uint8 id = uint8(_tokenIdCounter.current());
+        legionnaires[id] = legionnaire;
+        tokenOwner[id] = _address;
+        ownerToTokenAmount[_address]++;
+
+        emit Transfer(address(this), _address, id);
     }
 
+    function getLegion(address _address) public view returns (Legionnaire[] memory) {
+        uint tokenAmount = ownerToTokenAmount[_address];
+        require(tokenAmount > 0);
 
-/* -------------------------------------------------------------------------- */
-  
+        Legionnaire[] memory legion = new Legionnaire[](tokenAmount);
 
-    function safeMint(uint _amount) public {
+        uint i = 0;
+        uint index = 0;
+
+        for (i = 0; i < ownerToTokenAmount[_address]; i++) {
+            if (tokenOwner[i] == _address) {
+                legion[index] = legionnaires[i];
+                index++;
+            }
+        }
+        return legion;
+    }
+
+    /* -------------------------------------------------------------------------- */
+
+    function safeMint(uint _amount) public payable {
         require(msg.value >= (_amount * 0.069 ether), "Please send at least 0.069 ether (does not include gas)");
         require(_tokenIdCounter.current() <= 1000);
 
-        _safemint(msg.value, _tokenIdCounter);
-        _tokenIdCounter.increment();
+        _safemint(_amount, msg.sender);
     }
 
-    function _safemint(uint amount, address _address) private {
-      for (uint i = 0; i <= _amount; i++) {
-        _tokenIdCounter.increment();
-        _mintLegionare(_address);
-      }
+    function _safemint(uint _amount, address _address) private {
+        for (uint i = 0; i <= _amount; i++) {
+            _tokenIdCounter.increment();
+            _mintLegionare(_address);
+        }
     }
 }

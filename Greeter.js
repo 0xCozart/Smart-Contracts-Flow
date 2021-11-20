@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 
-const Greeter = artifacts.reqiure('../contracts/Greeter.sol');
+const Greeter = artifacts.require('../contracts/Greeter.sol');
 
 // Truffle test suite
 contract('Greeter', (accounts) => {
